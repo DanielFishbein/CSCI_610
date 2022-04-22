@@ -53,15 +53,17 @@ function bindVAO (shape, program) {
     gl.bindBuffer(gl.ARRAY_BUFFER, myVertexBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(shape.points), gl.STATIC_DRAW);
     gl.enableVertexAttribArray(program.aVertexPosition);
-    gl.vertexAttribPointer(program.aVertexPosition, 4, gl.FLOAT, false, 8, 0);
-    console.log(program.aVertexPosition)
-    // // create and bind bary buffer
-    // let myBaryBuffer = gl.createBuffer();
-    // gl.bindBuffer(gl.ARRAY_BUFFER, myBaryBuffer);
-    // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(shape.bary), gl.STATIC_DRAW);
-    // gl.enableVertexAttribArray(program.bary);
-    // gl.vertexAttribPointer(program.bary, 4, gl.FLOAT, false, 1, 0);
-    
+    gl.vertexAttribPointer(program.aVertexPosition, 3, gl.FLOAT, false, 0, 0);
+
+    // create and bind normal buffer
+
+    let myNormalBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, myNormalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(shape.normals), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(program.aNormal);
+    gl.vertexAttribPointer(program.aNormal , 3, gl.FLOAT, false, 0, 0);
+
+  
     // Setting up the IBO
     let myIndexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, myIndexBuffer);
@@ -122,55 +124,31 @@ function setUpPhong(program) {
     // including the model transform
     // but not your view and projection transforms as
     // they are set in setUpCamera()
-    //
 
-    // let avec3 = glMatrix.vec3.create()
-    // program.ambientLight = gl.getUniformLocation (program, 'ambientLight');
-    // program.lightPosition = gl.getUniformLocation (program, 'lightPosition');
-    // program.lightColor = gl.getUniformLocation (program, 'lightColor');
-    // program.baseColor = gl.getUniformLocation (program, 'baseColor');
-    // program.specHighlightColor = gl.getUniformLocation (program, 'specHighlightColor');
-    // program.ka = gl.getUniformLocation (program, 'ka');
-    // program.kd = gl.getUniformLocation (program, 'kd');
-    // program.ks = gl.getUniformLocation (program, 'ks');
-    // program.ke = gl.getUniformLocation (program, 'ke');
 
-    var ambientLight = gl.getUniformLocation(program, 'ambientLight')
-    gl.uniform3fv(ambientLight, [0.5, 0.0, 0.0]);
-    
-    var lightPosition = gl.getUniformLocation(program, 'lightPosition')
-    gl.uniform3fv(lightPosition, [0.1, 0.1, 0.1])
-  
-    var lightColor = gl.getUniformLocation(program, 'lightColor')
-    gl.uniform3fv(lightColor, [1.0, 0.1, 0.1])
-    
-    var baseColor = gl.getUniformLocation(program, 'baseColor')
-    gl.uniform3fv(baseColor, [1.0, 1.0, 1.0])
-    
-    var specHighlightColor = gl.getUniformLocation(program, 'specHighlightColor')
-    gl.uniform3fv(specHighlightColor, [0.0, .0, .0])
-    
-    var ka = gl.getUniformLocation(program, 'ka');
-    gl.uniform1fv(ka,[0.5])
-  
-    var ks = gl.getUniformLocation(program, 'ks');
-    gl.uniform1fv(ks, [0.0])
-    
-    var kd = gl.getUniformLocation(program, 'kd');
-    gl.uniform1fv(kd, [1.0])
-    
-  
-    var ke = gl.getUniformLocation(program, 'ke');
-    gl.uniform1fv(ke,[.5])
-  
-    
-    console.log()
-  
-    
+    let ambientLight_set = glMatrix.vec3.fromValues(0.8,0.3,0.5)
+    gl.uniform3fv(program.ambientLight,ambientLight_set)
+
+    let lightPosition_set = glMatrix.vec3.fromValues(100,1,525)
+    gl.uniform3fv(program.lightPosition,lightPosition_set)
+
+    let lightColor_set = glMatrix.vec3.fromValues(1,1,1)
+    gl.uniform3fv(program.lightColor,lightColor_set)
+
+    let baseColor_set = glMatrix.vec3.fromValues(1,0.5,0)
+    gl.uniform3fv(program.baseColor,baseColor_set)
+
+    let specHighlightColor_set = glMatrix.vec3.fromValues(1,1,1)
+    gl.uniform3fv(program.specHighlightColor,specHighlightColor_set)
+    // console.log()
+    gl.uniform1f(program.ks, 0.1)
+    gl.uniform1f(program.ka, 0.4)
+    gl.uniform1f(program.kd, 0.3)
+    gl.uniform1f(program.ke, 0.7)
   
   
-      // let modelMatrix = glMatrix.mat4.create();
-      // gl.uniformMatrix4fv(program.uModelT, false, modelMatrix);
+      let modelMatrix = glMatrix.mat4.create();
+      gl.uniformMatrix4fv(program.uModelT, false, modelMatrix);
 
 
     
@@ -201,23 +179,20 @@ function setUpCamera(program) {
 
     gl.useProgram (program);
 
-    let modelMatrix = glMatrix.mat4.create();
-    glMatrix.mat4.scale (modelMatrix, modelMatrix, [3, 3, 3]);
-    gl.uniformMatrix4fv (program.uModelT, false, modelMatrix);
+    // let modelMatrix = glMatrix.mat4.create();
+    // glMatrix.mat4.scale (modelMatrix, modelMatrix, [3, 3, 3]);
+    // gl.uniformMatrix4fv (program.uModelT, false, modelMatrix);
     
     let projMatrix = glMatrix.mat4.create();
-    glMatrix.mat4.ortho(projMatrix, -5, 5, -5, 5, 1.0, 300.0);
+    glMatrix.mat4.perspective(projMatrix, radians(40), 1.0, 1.0, 400)
     gl.uniformMatrix4fv (program.uProjT, false, projMatrix);
     
     let viewMatrix = glMatrix.mat4.create();
-    glMatrix.mat4.lookAt(viewMatrix, [1, 1, 5.0], [1, 1, 1],[1, 1, 1]);
+    glMatrix.mat4.lookAt(viewMatrix, [2, 5, 5], [1, 1, 1],[1, 1, 1]);
     gl.uniformMatrix4fv (program.uViewT, false, viewMatrix);
     // gl.uniformMatrix4fv (program.uProjT, false, projMatrix);
     // // set up your view
-    // // defaut is at (0,0,-5) looking at the origin
-    // let viewMatrix = glMatrix.mat4.create();
-    // glMatrix.mat4.lookAt(viewMatrix, [0,2, -5], [0,0, 0], [0, 1, 0]);
-    // gl.uniformMatrix4fv (program.uViewT, false, viewMatrix);
+    
     
 
     // set up your projection
